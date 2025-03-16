@@ -16,7 +16,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 console.log("hi2");
-
+              
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
