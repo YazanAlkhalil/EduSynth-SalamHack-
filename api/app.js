@@ -1,9 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const generateContentRouter = require('./generateContent');
-
+const cors=require('cors')
 const app = express();
+const corsOptions = {
+  origin: 'http://localhost:5173', 
+  credentials: true, 
+};
 
+app.use(cors(corsOptions));
 // Middleware
 app.use(bodyParser.json());
 
