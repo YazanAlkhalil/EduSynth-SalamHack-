@@ -2,7 +2,6 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 const { InferenceClient } = require("@huggingface/inference");
-const hfClient = new InferenceClient("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");
 require('dotenv').config()
 
 
@@ -281,23 +280,18 @@ async function addVisualsToSection(section) {
       3. Explain why this visual would enhance learning about this specific content
       4. Suggest where in the content it should be placed (e.g., "after paragraph discussing X")
       5. Rate the learning impact of this visual on a scale of 1-10 and explain why
+      6. IMPORTANT: Rate the searchability of this visual on a scale of 1-10 (how likely it is to find this image on stock photo sites)
       
       Return your response as a JSON array of recommended visuals in this exact format (THIS IS JUST A TEMPLATE - FILL IN WITH ACTUAL VALUES):
       [
         {
           "type": "TYPE_OF_VISUAL_HERE",
           "description": "DESCRIBE_WHAT_IT_SHOULD_SHOW_HERE",
+          "search_terms": "SIMPLIFIED_SEARCH_TERMS_FOR_FINDING_IMAGES",
           "reason": "EXPLAIN_WHY_THIS_VISUAL_WOULD_HELP_HERE",
           "placement": "SPECIFY_WHERE_IN_CONTENT_IT_SHOULD_GO_HERE",
           "learning_impact": IMPACT_RATING_HERE,
-          "explanation": "EXPLAIN_THE_IMPACT_RATING_HERE"
-        },
-        {
-          "type": "TYPE_OF_VISUAL_HERE",
-          "description": "DESCRIBE_WHAT_IT_SHOULD_SHOW_HERE",
-          "reason": "EXPLAIN_WHY_THIS_VISUAL_WOULD_HELP_HERE",
-          "placement": "SPECIFY_WHERE_IN_CONTENT_IT_SHOULD_GO_HERE",
-          "learning_impact": IMPACT_RATING_HERE,
+          "searchability": SEARCHABILITY_RATING_HERE,
           "explanation": "EXPLAIN_THE_IMPACT_RATING_HERE"
         }
       ]`;
@@ -312,31 +306,36 @@ async function addVisualsToSection(section) {
         let visualRecommendations = [];
         try {
             visualRecommendations = JSON.parse(jsonMatch[1].trim());
+            // If we got a single object instead of an array, wrap it in an array
+            if (!Array.isArray(visualRecommendations)) {
+                visualRecommendations = [visualRecommendations];
+            }
         } catch (error) {
             console.error('Error parsing visual recommendations:', error);
             return section;
         }
 
-        // Filter to highest impact visuals (if any were found)
-        const highImpactVisuals = visualRecommendations
-            .filter(v => v.learning_impact >= 7)
+        // Filter to high impact AND high searchability visuals
+        const highQualityVisuals = visualRecommendations
+            .filter(v => v.learning_impact >= 7 && (v.searchability >= 7 || v.type.toLowerCase() === 'chart' || v.type.toLowerCase() === 'graph'))
             .slice(0, 2); // Max 2 visuals per section
 
-        if (highImpactVisuals.length === 0) {
+        if (highQualityVisuals.length === 0) {
             return section;
         }
 
-        // For each high-impact visual, generate/fetch the appropriate visual content
+        // For each high-quality visual, generate/fetch the appropriate visual content
         const visuals = [];
-        for (const visualRec of highImpactVisuals) {
+        for (const visualRec of highQualityVisuals) {
             let visual = null;
+            const searchTerms = visualRec.search_terms || visualRec.description;
 
             // Handle different types of visuals
             switch (visualRec.type.toLowerCase()) {
                 case 'photo':
                 case 'image':
                 case 'illustration':
-                    visual = await getRelevantImage(visualRec.description);
+                    visual = await getRelevantImage(searchTerms);
                     break;
 
                 case 'chart':
@@ -354,7 +353,7 @@ async function addVisualsToSection(section) {
                 //     break;
 
                 default:
-                    visual = await getRelevantImage(visualRec.description);
+                    visual = await getRelevantImage(searchTerms);
             }
 
             if (visual) {
@@ -366,8 +365,8 @@ async function addVisualsToSection(section) {
                         position: visualRec.placement, // e.g., "after paragraph discussing X"
                         sectionId: section.id
                     },
-                    impactRating: visualRec.impactRating,
-                    rationale: visualRec.rationale
+                    impactRating: visualRec.learning_impact,
+                    rationale: visualRec.reason
                 });
             }
         }
@@ -387,11 +386,18 @@ async function addVisualsToSection(section) {
  */
 async function getRelevantImage(description) {
     try {
-        const searchQuery = description.split(' ').slice(0, 5).join(' ');
+        // Create a more effective search query
+        // Take first 3-5 most relevant words
+        const searchTerms = description.split(' ')
+            .filter(term => term.length > 2 && !term.includes('/') && !term.includes('(') && !term.includes(')'))
+            .slice(0, 5)
+            .join(' ');
+            
+        console.log(`Searching Unsplash for: "${searchTerms}"`);
 
         const response = await axios.get(`https://api.unsplash.com/search/photos`, {
             params: {
-                query: searchQuery,
+                query: searchTerms,
                 per_page: 1,
                 orientation: 'landscape'
             },
@@ -402,6 +408,7 @@ async function getRelevantImage(description) {
 
         if (response.data.results && response.data.results.length > 0) {
             const image = response.data.results[0];
+            console.log(`Found image: ${image.urls.small}`);
             return {
                 type: 'image',
                 url: image.urls.regular,
@@ -413,6 +420,45 @@ async function getRelevantImage(description) {
                 }
             };
         }
+        
+        // If no results, try a more generic search based on the topic
+        console.log(`No results found for "${searchTerms}", trying more generic search`);
+        
+        // Extract key nouns from the search terms
+        const keyTerms = searchTerms.split(' ')
+            .filter(term => term.length > 3)
+            .slice(0, 2)
+            .join(' ');
+        
+        if (!keyTerms) return null;
+        
+        const fallbackResponse = await axios.get(`https://api.unsplash.com/search/photos`, {
+            params: {
+                query: keyTerms,
+                per_page: 1,
+                orientation: 'landscape'
+            },
+            headers: {
+                'Authorization': 'Client-ID '+process.env.UNSPLASHAPIKEY
+            }
+        });
+        
+        if (fallbackResponse.data.results && fallbackResponse.data.results.length > 0) {
+            const image = fallbackResponse.data.results[0];
+            console.log(`Found fallback image: ${image.urls.small}`);
+            return {
+                type: 'image',
+                url: image.urls.regular,
+                thumbnail: image.urls.small,
+                alt: description,
+                credit: {
+                    name: image.user.name,
+                    link: image.user.links.html
+                }
+            };
+        }
+        
+        console.log(`No images found for "${description}"`);
         return null;
     } catch (error) {
         console.error('Error getting relevant image:', error);
@@ -660,4 +706,4 @@ async function getDeepSeekResponse(prompt, retries = 3) {
     }
 }
 
-module.exports = router; 
+module.exports = router;

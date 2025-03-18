@@ -1,25 +1,54 @@
 import React, { useState } from 'react';
 import { Send, Bot, User, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import axios from 'axios';
+import ContentDisplay from './ContentDisplay';
 
+
+// Main Chat component
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [selectedOption1, setSelectedOption1] = useState('');
-  const [selectedOption2, setSelectedOption2] = useState('');
+  const [selectedOption1, setSelectedOption1] = useState('beginner');
+  const [selectedOption2, setSelectedOption2] = useState('lesson');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
     const newMessage = { role: 'user', content: input };
-    const assistantResponse = {
-      role: 'assistant',
-      content: 'Thank you for your message',
-    };
-
-    setMessages([...messages, newMessage, assistantResponse]);
+    setMessages([...messages, newMessage]);
     setInput('');
+    setLoading(true);
+
+    try {
+      const response = await axios.post(
+        'http://localhost:3000/api/generate-content',
+        {
+          prompt: input,
+          difficultyLevel: selectedOption1,
+          format: selectedOption2,
+        }
+      );
+      
+      const assistantResponse = {
+        role: 'assistant',
+        content: 'I\'ve generated the content for you!',
+        generatedContent: response.data
+      };
+
+      setMessages(prev => [...prev, assistantResponse]);
+    } catch (error) {
+      console.error('Error generating content:', error);
+      const errorMessage = {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error while generating content. Please try again.'
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGenerateQuiz = () => {
@@ -112,9 +141,27 @@ const Chat = () => {
                         {message.role === 'assistant' ? 'Edusynth AI' : 'You'}
                       </p>
                       <p className="text-gray-300">{message.content}</p>
+                      {message.generatedContent && (
+                        <ContentDisplay content={message.generatedContent} />
+                      )}
                     </div>
                   </div>
                 ))}
+                
+                {loading && (
+                  <div className="bg-[#1E2537] p-6 rounded-lg text-center">
+                    <div className="animate-bounce flex justify-center mb-4">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
+                      <div className="w-3 h-3 bg-blue-500 rounded-full mr-1 animate-bounce delay-100"></div>
+                      <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce delay-200"></div>
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">Generating your content...</h3>
+                    <p className="text-gray-300">This might take a minute or two. Maybe grab a snack or a cup of coffee while I work my magic! ✨</p>
+                    <div className="mt-4 text-gray-400 italic">
+                      Fun fact: The average person spends 6 months of their life waiting for red lights to turn green.
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -148,6 +195,7 @@ const Chat = () => {
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Message Edusynth AI..."
                   className="w-full bg-[#1E2537] rounded-lg py-4 px-6 pr-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={loading}
                 />
                 <div className="absolute right-14 top-1/2 -translate-y-1/2 flex items-center">
                   <div className="relative group">
@@ -155,6 +203,7 @@ const Chat = () => {
                       type="button"
                       onClick={handleGenerateQuiz}
                       className="p-2 hover:bg-[#2A3343] rounded-lg transition-colors"
+                      disabled={loading}
                     >
                       <FileText size={20} className="text-blue-500" />
                     </button>
@@ -166,9 +215,9 @@ const Chat = () => {
                 <button
                   type="submit"
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-[#2A3343] rounded-lg transition-colors"
-                  disabled={!input.trim()}
+                  disabled={!input.trim() || loading}
                 >
-                  <Send size={20} className={input.trim() ? 'text-blue-500' : 'text-gray-500'} />
+                  <Send size={20} className={input.trim() && !loading ? 'text-blue-500' : 'text-gray-500'} />
                 </button>
               </div>
             </form>
