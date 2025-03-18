@@ -37,7 +37,6 @@ const Chat = () => {
   return (
     <div>
       <div className="flex h-screen bg-[#0E1525] text-white">
-        {/* Sidebar */}
         {isSidebarOpen && (
           <div className="w-80 border-r border-[#1E2537] p-4 relative">
             <div className="flex items-center justify-between mb-8">
@@ -159,7 +158,6 @@ const Chat = () => {
                     >
                       <FileText size={20} className="text-blue-500" />
                     </button>
-                    {/* Tooltip */}
                     <div className="absolute -top-8 right-0 bg-[#1E2537] text-white text-sm px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       Generate Quiz
                     </div>
