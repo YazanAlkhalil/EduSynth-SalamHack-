@@ -4,7 +4,9 @@ import { Send, Bot, User, FileText, ChevronLeft, ChevronRight } from 'lucide-rea
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [selectedOption1, setSelectedOption1] = useState('');
+  const [selectedOption2, setSelectedOption2] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -13,7 +15,7 @@ const Chat = () => {
     const newMessage = { role: 'user', content: input };
     const assistantResponse = {
       role: 'assistant',
-      content: 'test Thank you for your message',
+      content: 'Thank you for your message',
     };
 
     setMessages([...messages, newMessage, assistantResponse]);
@@ -21,15 +23,15 @@ const Chat = () => {
   };
 
   const handleGenerateQuiz = () => {
-    alert('test Generate Quiz');
+    alert('Generate Quiz');
   };
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen); 
+    setIsSidebarOpen(!isSidebarOpen);
   };
 
   const handleNewChat = () => {
-    setMessages([]); 
+    setMessages([]);
   };
 
   return (
@@ -48,7 +50,6 @@ const Chat = () => {
               New Chat
             </button>
 
-         
             <button
               onClick={toggleSidebar}
               className="absolute -right-4 top-1/2 transform -translate-y-1/2 p-2 bg-[#1E2537] rounded-full hover:bg-[#2A3343] z-50"
@@ -122,35 +123,56 @@ const Chat = () => {
           {/* Input Area */}
           <div className="border-t border-[#1E2537] p-4">
             <form onSubmit={handleSubmit} className="max-w-4xl mx-auto relative">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Message Edusynth AI..."
-                className="w-full bg-[#1E2537] rounded-lg py-4 px-6 pr-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <div className="absolute right-14 top-1/2 -translate-y-1/2 flex items-center">
-                <div className="relative group">
-                  <button
-                    type="button"
-                    onClick={handleGenerateQuiz}
-                    className="p-2 hover:bg-[#2A3343] rounded-lg transition-colors"
-                  >
-                    <FileText size={20} className="text-blue-500" />
-                  </button>
-                  {/* Tooltip */}
-                  <div className="absolute -top-8 right-0 bg-[#1E2537] text-white text-sm px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    Generate Quiz
+              <div className="flex gap-4 mb-4">
+                <select
+                  value={selectedOption1}
+                  onChange={(e) => setSelectedOption1(e.target.value)}
+                  className="w-1/2 bg-[#1E2537] rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <option value="beginner">مبتدئ</option>
+              <option value="intermediate">متوسط</option>
+              <option value="advanced">متقدم</option>
+                </select>
+                <select
+                  value={selectedOption2}
+                  onChange={(e) => setSelectedOption2(e.target.value)}
+                  className="w-1/2 bg-[#1E2537] rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+           <option value="lesson">درس</option>
+              <option value="article">مقالة</option>
+                </select>
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Message Edusynth AI..."
+                  className="w-full bg-[#1E2537] rounded-lg py-4 px-6 pr-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <div className="absolute right-14 top-1/2 -translate-y-1/2 flex items-center">
+                  <div className="relative group">
+                    <button
+                      type="button"
+                      onClick={handleGenerateQuiz}
+                      className="p-2 hover:bg-[#2A3343] rounded-lg transition-colors"
+                    >
+                      <FileText size={20} className="text-blue-500" />
+                    </button>
+                    {/* Tooltip */}
+                    <div className="absolute -top-8 right-0 bg-[#1E2537] text-white text-sm px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      Generate Quiz
+                    </div>
                   </div>
                 </div>
+                <button
+                  type="submit"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-[#2A3343] rounded-lg transition-colors"
+                  disabled={!input.trim()}
+                >
+                  <Send size={20} className={input.trim() ? 'text-blue-500' : 'text-gray-500'} />
+                </button>
               </div>
-              <button
-                type="submit"
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-[#2A3343] rounded-lg transition-colors"
-                disabled={!input.trim()}
-              >
-                <Send size={20} className={input.trim() ? 'text-blue-500' : 'text-gray-500'} />
-              </button>
             </form>
           </div>
         </div>
