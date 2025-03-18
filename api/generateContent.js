@@ -4,6 +4,8 @@ const router = express.Router();
 const { InferenceClient } = require("@huggingface/inference");
 const hfClient = new InferenceClient("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");
 require('dotenv').config()
+const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/flashcards'; // Replace with the actual API endpoint
+const DEEPSEEK_API_KEY = process.env.DSAPIKEY; // Get API key from environment variable
 
 
 /**
@@ -17,6 +19,24 @@ require('dotenv').config()
  *   "format": "article|lesson|overview" // optional
  * }
  */
+
+router.post('/generate-flashcards', async (req, res) => {
+    console.log("test flashcard");
+  
+    const { prompt } = req.body;
+    console.log(prompt);
+
+    if (!prompt) {
+        return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    try {
+        const flashcards = await generateFlashcards(prompt);
+        res.status(200).json({ flashcards });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to generate flashcards', details: error.message });
+    }
+});
 router.post('/generate-content', async (req, res) => {
     try {
         console.log('Starting content generation process');
@@ -659,5 +679,38 @@ async function getDeepSeekResponse(prompt, retries = 3) {
         }
     }
 }
+
+
+// Function to generate flashcards using Deepseek API
+async function generateFlashcards(prompt) {
+    try {
+        console.log(DEEPSEEK_API_KEY);
+        console.log(DEEPSEEK_API_URL);
+        const response = await axios.post(
+            DEEPSEEK_API_URL,
+            {
+                prompt: prompt // Send the prompt to the API
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        if (response.status === 200) {
+            return response.data.flashcards; // Return the generated flashcards
+        } else {
+            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
+    } catch (error) {
+        console.error('Error generating flashcards:', error.message);
+        throw error; // Re-throw the error to handle it in the route
+    }
+}
+
+// Controller function for generating flashcards
+
 
 module.exports = router; 
