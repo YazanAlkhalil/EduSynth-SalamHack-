@@ -619,36 +619,11 @@ async function generateQuiz(content) {
 }
 
 
-/**
- * Insert visual markers into the content
- */
-function insertVisualMarkers(content, visuals) {
-    let modifiedContent = content;
-
-    // Sort visuals by their placement order
-    const sortedVisuals = visuals.sort((a, b) => {
-        const aPos = a.placement.position.toLowerCase();
-        const bPos = b.placement.position.toLowerCase();
-        return aPos.localeCompare(bPos);
-    });
-
-    // Insert markers for each visual
-    for (const visual of sortedVisuals) {
-        const marker = `\n\n[VISUAL:${visual.type.toUpperCase()}:${visual.description}]\n\n`;
-        modifiedContent = modifiedContent.replace(
-            new RegExp(visual.placement.position, 'i'),
-            `$&${marker}`
-        );
-    }
-
-    return modifiedContent;
-}
 
 // Replace all Anthropic API calls with this helper function
 async function getDeepSeekResponse(prompt, retries = 3) {
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
-
             const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
                 model: "deepseek/deepseek-chat:free",
                 messages: [
