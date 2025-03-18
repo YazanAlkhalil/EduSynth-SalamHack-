@@ -8,7 +8,7 @@ const corsOptions = {
   credentials: true, 
 };
 
-app.use(cors(corsOptions));
+app.use(cors());
 // Middleware
 app.use(bodyParser.json());
 

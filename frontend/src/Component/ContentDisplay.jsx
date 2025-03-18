@@ -1,75 +1,50 @@
-import React, { useState } from 'react';
+import { ContentSection } from "./ContentSection";
+import { VisualComponent } from "./Visual";
+import ReactMarkdown from 'react-markdown';
 
+// Main content display component
+ const ContentDisplay = ({ content }) => {
+  if (!content) return null;
 
-const ContentDisplay = ({ content }) => {
-    const [expandedSections, setExpandedSections] = useState({});
-  
-    const toggleSection = (id) => {
-      setExpandedSections((prev) => ({
-        ...prev,
-        [id]: !prev[id],
-      }));
-    };
-  
-    if (!content) return null;
-  
-    return (
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold text-primary mb-4">المحتوى المنشأ:</h2>
-  
-        <div className="mb-8">
-          <h2
-            className="text-2xl font-bold text-secondary cursor-pointer"
-            onClick={() => toggleSection(content.introduction.id)}
-          >
-            {content.introduction.title}
-          </h2>
-          {expandedSections[content.introduction.id] && (
-            <div className="mt-4 p-6 bg-amber-600 rounded-lg">
-              <p className="text-text">{content.introduction.content}</p>
-            </div>
-          )}
-        </div>
-  
-        {content.sections.map((section) => (
-          <div key={section.id} className="mb-8">
-            <h2
-              className="text-2xl font-bold text-secondary cursor-pointer"
-              onClick={() => toggleSection(section.id)}
-            >
-              {section.title}
-            </h2>
-            {expandedSections[section.id] && (
-              <div className="mt-4 p-6 bg-amber-600 rounded-lg">
-                <p className="text-text">{section.content}</p>
-  
-                {section.subsections.map((subsection) => (
-                  <div key={subsection.id} className="mt-4">
-                    <h3 className="text-xl font-semibold text-secondary">
-                      {subsection.title}
-                    </h3>
-                    <p className="text-text mt-2">{subsection.content}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+  return (
+    <div className="bg-[#1E2537] p-6 rounded-lg mt-4">
+      <h2 className="text-2xl font-bold mb-4">{content.title}</h2>
+      
+      {/* Introduction */}
+      {content.introduction && (
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold mb-2">{content.introduction.title}</h3>
+          <p className="text-gray-300 mb-4">{content.introduction.description}</p>
+          <div className="prose prose-invert max-w-none">
+            <ReactMarkdown>{content.introduction.content}</ReactMarkdown>
           </div>
-        ))}
-  
-        <div className="mb-8">
-          <h2
-            className="text-2xl font-bold text-secondary cursor-pointer"
-            onClick={() => toggleSection(content.conclusion.id)}
-          >
-            {content.conclusion.title}
-          </h2>
-          {expandedSections[content.conclusion.id] && (
-            <div className="mt-4 p-6 bg-amber-600 rounded-lg">
-              <p className="text-text">{content.conclusion.content}</p>
+          
+          {/* Introduction Visuals */}
+          {content.introduction.visuals && content.introduction.visuals.length > 0 && (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {content.introduction.visuals.map((visual, idx) => (
+                <VisualComponent
+                  key={`intro-visual-${idx}`}
+                  visual={visual} 
+                  index={idx} 
+                  sectionId="intro" 
+                />
+              ))}
             </div>
           )}
         </div>
-      </div>
-    );
-  };
-  export default ContentDisplay
+      )}
+      
+      {/* Sections */}
+      {content.sections && content.sections.map((section, idx) => (
+        <ContentSection
+          key={`section-${idx}`}
+          section={section} 
+          sectionIndex={idx} 
+        />
+      ))}
+    </div>
+  );
+};
+
+export default ContentDisplay
