@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "start": "node app.js"
+  },
   "dependencies": {
     "@huggingface/inference": "^3.5.2",
     "axios": "^1.8.3",
