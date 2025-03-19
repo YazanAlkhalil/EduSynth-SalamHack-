@@ -11,6 +11,11 @@ const corsOptions = {
 app.use(cors());
 // Middleware
 app.use(bodyParser.json());
+app.get('/',(req,res) =>{
+
+  res.json({hello:"hello"})
+}
+)
 
 // Routes
 app.use('/api', generateContentRouter);
