@@ -40,7 +40,7 @@ const Chat = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:3000/api/generate-content',
+        'https://edu-synth-salam-hack-oj4e.vercel.app/api/generate-content',
         {
           prompt: input,
           difficultyLevel: selectedOption1,
@@ -76,7 +76,7 @@ const Chat = () => {
     
     try {
       const response = await axios.post(
-        'http://localhost:3000/api/generate-quizes',
+        'https://edu-synth-salam-hack-oj4e.vercel.app/api/generate-quizes',
         { params: input }
       );
       
@@ -185,7 +185,7 @@ const Chat = () => {
     
     try {
       const response = await axios.post(
-        'http://localhost:3000/api/generate-flashcards',
+        'https://edu-synth-salam-hack-oj4e.vercel.app/api/generate-flashcards',
         { prompt: input }
       );
       
