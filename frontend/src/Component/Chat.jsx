@@ -45,6 +45,9 @@ const Chat = () => {
           prompt: input,
           difficultyLevel: selectedOption1,
           format: selectedOption2,
+        },
+        {
+          timeout: 6000000
         }
       );
       
@@ -186,7 +189,10 @@ const Chat = () => {
     try {
       const response = await axios.post(
         'https://edu-synth-salam-hack-oj4e.vercel.app/api/generate-flashcards',
-        { prompt: input }
+        { prompt: input },{
+          timeout: 6000000
+
+        }
       );
       
       setFlashcards(response.data);
