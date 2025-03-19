@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "node server.js",
+    "start": "node app.js",
     "vercel-build": "npm install && npm run build"
   },
   "dependencies": {
