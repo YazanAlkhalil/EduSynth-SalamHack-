@@ -24,7 +24,7 @@ const ContentGenerator = () => {
   
     try {
       const response = await axios.post(
-        'https://edu-synth-salam-hack-oj4e.vercel.app/api/generate-content',
+        'http://localhost:3000/api/generate-content',
         {
           prompt,
           difficultyLevel,
