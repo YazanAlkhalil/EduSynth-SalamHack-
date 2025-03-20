@@ -6,7 +6,7 @@ import VoiceChat from './VoiceChat'; // Add this import
 
 // export const baseUrl = 'http://localhost:3000'
 // export const baseUrl = 'https://bad-mimi-asdfqwq-98106bdd.koyeb.app'
-export const baseUrl = 'http://edu.mouhannadabdalrhem.online'
+export const baseUrl = 'https://bad-mimi-asdfqwq-98106bdd.koyeb.app'
 
 // Main Chat component
 const Chat = () => {
