@@ -4,8 +4,9 @@ import axios from 'axios';
 import ContentDisplay from './ContentDisplay';
 import VoiceChat from './VoiceChat'; // Add this import
 
-export const baseUrl = 'http://localhost:3000'
-// const baseUrl = 'https://bad-mimi-asdfqwq-98106bdd.koyeb.app'
+// export const baseUrl = 'http://localhost:3000'
+// export const baseUrl = 'https://bad-mimi-asdfqwq-98106bdd.koyeb.app'
+export const baseUrl = 'http://edu.mouhannadabdalrhem.online'
 
 // Main Chat component
 const Chat = () => {
