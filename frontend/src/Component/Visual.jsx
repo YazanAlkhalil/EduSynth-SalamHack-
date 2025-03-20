@@ -1,6 +1,5 @@
 import { ChartComponent } from './Chart';
 
-// Component for rendering visuals (images, maps, charts)
 export const VisualComponent = ({ visual, index, sectionId }) => {
     const visualId = `${sectionId}-visual-${index}`;
     

@@ -67,24 +67,19 @@ router.post('/generate-content', async (req, res) => {
 
         console.log(`Generating content for: "${prompt}" (${difficultyLevel} level, ${format} format)`);
 
-        // Step 1: Generate a comprehensive learning structure based on the topic
         console.log('== Generating content structure ==');
         const contentStructure = await generateTopicStructure(prompt, difficultyLevel, format);
         console.log('Content structure generated:', JSON.stringify(contentStructure, null, 2));
 
-        // Step 2: Expand each section with detailed content
         console.log('== Expanding content sections ==');
         const expandedContent = await expandContentSections(contentStructure);
         console.log('Content sections expanded');
 
-        // Step 3: Enhance with contextual visuals and infographics where appropriate
         console.log('== Enhancing with visuals ==');
         const enhancedContent = await enhanceWithVisuals(expandedContent);
         console.log('Visuals added:', enhancedContent.sections.map(s => s.visuals?.length || 0));
 
-        // Step 4: Add interactive elements (quizzes, checkpoints)
         console.log('== Adding interactive elements ==');
-        // const finalContent = await addInteractiveElements(enhancedContent);
         console.log('Interactive elements added');
 
         console.log('Content generation completed successfully');
@@ -95,9 +90,7 @@ router.post('/generate-content', async (req, res) => {
     }
 });
 
-/**
- * Generate a comprehensive topic structure using deepseek API
- */
+
 async function generateTopicStructure(topic, difficultyLevel, format) {
     try {
         const enhancedPrompt = `Create a detailed learning structure about "${topic}" at a ${difficultyLevel} level, formatted as a ${format}.
@@ -152,7 +145,6 @@ async function generateTopicStructure(topic, difficultyLevel, format) {
 
         const textResponse = await getDeepSeekResponse(enhancedPrompt);
 
-        // Find JSON content between code blocks or in the entire response
         const jsonMatch = textResponse.match(/```json\n([\s\S]*?)\n```/) ||
             textResponse.match(/```\n([\s\S]*?)\n```/) ||
             [null, textResponse];
@@ -161,7 +153,6 @@ async function generateTopicStructure(topic, difficultyLevel, format) {
         return JSON.parse(jsonContent);
     } catch (error) {
         console.error('Error generating topic structure:', error);
-        // Return a basic structure if API call fails
         return {
             title: topic,
             introduction: { id: "intro", title: "Introduction", description: `Introduction to ${topic}` },
@@ -176,15 +167,12 @@ async function generateTopicStructure(topic, difficultyLevel, format) {
     }
 }
 
-/**
- * Expand each section with detailed content using deepseek API
- */
+
 async function expandContentSections(contentStructure) {
     try {
         console.log(`Expanding content for: "${contentStructure.title}"`);
         const expandedStructure = { ...contentStructure };
 
-        // Process introduction and conclusion in parallel
         const [introContent, conclusionContent] = await Promise.all([
             getDetailedContent(
                 contentStructure.title,
@@ -201,7 +189,6 @@ async function expandContentSections(contentStructure) {
         expandedStructure.introduction.content = introContent;
         expandedStructure.conclusion.content = conclusionContent;
 
-        // Process all sections in parallel
         const sectionPromises = contentStructure.sections.map(async (section) => {
             const sectionContent = await getDetailedContent(
                 contentStructure.title,
@@ -209,7 +196,6 @@ async function expandContentSections(contentStructure) {
                 section.description
             );
 
-            // Process all subsections in parallel
             const subsectionPromises = section.subsections.map(subsection =>
                 getDetailedContent(
                     contentStructure.title,
@@ -239,9 +225,7 @@ async function expandContentSections(contentStructure) {
     }
 }
 
-/**
- * Get detailed content for a specific section
- */
+
 async function getDetailedContent(mainTopic, sectionTitle, sectionDescription) {
     try {
         const enhancedPrompt = `Create detailed educational content for a section titled "${sectionTitle}" within a lesson about "${mainTopic}".
@@ -259,14 +243,11 @@ async function getDetailedContent(mainTopic, sectionTitle, sectionDescription) {
     }
 }
 
-/**
- * Enhance content with contextually appropriate visuals
- */
+
 async function enhanceWithVisuals(expandedContent) {
     console.log(`Enhancing content with visuals for: "${expandedContent.title}"`);
     const enhancedContent = { ...expandedContent };
 
-    // Process introduction, sections, and conclusion in parallel
     const [enhancedIntro, enhancedConclusion] = await Promise.all([
         addVisualsToSection(enhancedContent.introduction),
         addVisualsToSection(enhancedContent.conclusion)
@@ -275,11 +256,9 @@ async function enhanceWithVisuals(expandedContent) {
     enhancedContent.introduction = enhancedIntro;
     enhancedContent.conclusion = enhancedConclusion;
 
-    // Process all sections in parallel
     const sectionPromises = expandedContent.sections.map(async section => {
         const enhancedSection = await addVisualsToSection(section);
 
-        // Process all subsections in parallel
         const subsectionPromises = enhancedSection.subsections.map(subsection =>
             addVisualsToSection(subsection)
         );
@@ -294,17 +273,13 @@ async function enhanceWithVisuals(expandedContent) {
     return enhancedContent;
 }
 
-/**
- * Add appropriate visuals to a content section based on context analysis
- * Uses deepseek to identify best visual opportunities within the content
- */
+
 async function addVisualsToSection(section) {
     try {
         if (!section.content || !section.visualOpportunities || section.visualOpportunities.length === 0) {
             return section;
         }
 
-        // Ask deepseek to identify the most impactful visual opportunities in this content
         const visualAnalysisPrompt = `Analyze this educational content and identify 1-2 specific concepts, events, or data points that would benefit most from visual representation.
     
     Educational content:
@@ -337,7 +312,6 @@ async function addVisualsToSection(section) {
 
         const textResponse = await getDeepSeekResponse(visualAnalysisPrompt);
 
-        // Extract JSON recommendations
         const jsonMatch = textResponse.match(/```json\n([\s\S]*?)\n```/) ||
             textResponse.match(/```\n([\s\S]*?)\n```/) ||
             [null, textResponse];
@@ -345,7 +319,6 @@ async function addVisualsToSection(section) {
         let visualRecommendations = [];
         try {
             visualRecommendations = JSON.parse(jsonMatch[1].trim());
-            // If we got a single object instead of an array, wrap it in an array
             if (!Array.isArray(visualRecommendations)) {
                 visualRecommendations = [visualRecommendations];
             }
@@ -354,22 +327,19 @@ async function addVisualsToSection(section) {
             return section;
         }
 
-        // Filter to high impact AND high searchability visuals
         const highQualityVisuals = visualRecommendations
             .filter(v => v.learning_impact >= 7 && (v.searchability >= 7 || v.type.toLowerCase() === 'chart' || v.type.toLowerCase() === 'graph'))
-            .slice(0, 2); // Max 2 visuals per section
+            .slice(0, 2); 
 
         if (highQualityVisuals.length === 0) {
             return section;
         }
 
-        // For each high-quality visual, generate/fetch the appropriate visual content
         const visuals = [];
         for (const visualRec of highQualityVisuals) {
             let visual = null;
             const searchTerms = visualRec.search_terms || visualRec.description;
 
-            // Handle different types of visuals
             switch (visualRec.type.toLowerCase()) {
                 case 'photo':
                 case 'image':
@@ -387,10 +357,7 @@ async function addVisualsToSection(section) {
                     visual = await getRelevantMap(visualRec.description);
                     break;
 
-                // case 'timeline':
-                //     visual = await generateTimeline(visualRec.description);
-                //     break;
-
+              
                 default:
                     visual = await getRelevantImage(searchTerms);
             }
@@ -420,13 +387,9 @@ async function addVisualsToSection(section) {
     }
 }
 
-/**
- * Get a relevant image from Unsplash API
- */
+
 async function getRelevantImage(description) {
     try {
-        // Create a more effective search query
-        // Take first 3-5 most relevant words
         const searchTerms = description.split(' ')
             .filter(term => term.length > 2 && !term.includes('/') && !term.includes('(') && !term.includes(')'))
             .slice(0, 5)
@@ -460,10 +423,8 @@ async function getRelevantImage(description) {
             };
         }
 
-        // If no results, try a more generic search based on the topic
         console.log(`No results found for "${searchTerms}", trying more generic search`);
 
-        // Extract key nouns from the search terms
         const keyTerms = searchTerms.split(' ')
             .filter(term => term.length > 3)
             .slice(0, 2)
@@ -505,9 +466,7 @@ async function getRelevantImage(description) {
     }
 }
 
-/**
- * Generate a data visualization using chart.js configuration
- */
+
 async function generateDataVisualization(description) {
     try {
         // Ask deepseek to generate suitable data for the visualization
@@ -552,12 +511,9 @@ async function generateDataVisualization(description) {
     }
 }
 
-/**
- * Get a relevant map image or generate a map visualization
- */
+
 async function getRelevantMap(description) {
     try {
-        // For maps, we'll use a simple approach of getting a relevant image with "map" in the query
         const searchQuery = `map ${description.split(' ').slice(0, 3).join(' ')}`;
 
         const response = await axios.get(`https://api.unsplash.com/search/photos`, {
@@ -590,12 +546,9 @@ async function getRelevantMap(description) {
     }
 }
 
-/**
- * Generate a timeline visualization
- */
+
 async function generateTimeline(description) {
     try {
-        // Ask deepseek to generate timeline data
         const timelinePrompt = `Create a timeline visualization data based on this description: "${description}"
     
     Generate a JSON array of timeline events that would be educational and relevant to this topic.
@@ -609,7 +562,6 @@ async function generateTimeline(description) {
 
         const textResponse = await getDeepSeekResponse(timelinePrompt);
 
-        // Extract the timeline data from deepseek's response
         const jsonMatch = textResponse.match(/```json\n([\s\S]*?)\n```/) ||
             textResponse.match(/```\n([\s\S]*?)\n```/) ||
             [null, textResponse];
@@ -633,9 +585,7 @@ async function generateTimeline(description) {
     }
 }
 
-/**
- * Add interactive elements to the content
- */
+
 async function addInteractiveElements(enhancedContent) {
     try {
         console.log(`Adding interactive elements to: "${enhancedContent.title}"`);
@@ -656,12 +606,9 @@ async function addInteractiveElements(enhancedContent) {
     }
 }
 
-/**
- * Generate a comprehensive quiz based on the content
- */
+
 async function generateQuiz(content) {
     try {
-        // Create a prompt that includes key information from the content
         let quizPrompt = `Create a quiz to test understanding of a lesson about "${content}".
 
     
@@ -695,7 +642,6 @@ async function generateQuiz(content) {
 
         const textResponse = await getDeepSeekResponse(quizPrompt);
 
-        // Extract the quiz data from deepseek's response
         const jsonMatch = textResponse.match(/```json\n([\s\S]*?)\n```/) ||
             textResponse.match(/```\n([\s\S]*?)\n```/) ||
             [null, textResponse];
@@ -723,7 +669,6 @@ router.post('/generate-quizes',async (req,res)=>{
     res.json(await generateQuiz(req.body.params))
 })
 
-// Replace all Anthropic API calls with this helper function
 async function getDeepSeekResponse(prompt, retries = 3) {
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
@@ -753,10 +698,9 @@ async function getDeepSeekResponse(prompt, retries = 3) {
         } catch (error) {
             console.error(`Attempt ${attempt} failed for prompt: ${prompt.substring(0, 50)}...`);
             if (attempt === retries) {
-                throw error; // If last attempt, throw the error
+                throw error;
             }
 
-            // Exponential backoff before retrying
             const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
             await new Promise(resolve => setTimeout(resolve, delay));
         }

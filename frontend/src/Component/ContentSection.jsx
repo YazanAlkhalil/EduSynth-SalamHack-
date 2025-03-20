@@ -1,7 +1,6 @@
 import { VisualComponent } from './Visual';
 import ReactMarkdown from 'react-markdown';
 
-// Component for rendering content sections
 export const ContentSection = ({ section, sectionIndex }) => {
     return (
       <div className="mb-8 border-t border-gray-700 pt-6">
@@ -14,7 +13,6 @@ export const ContentSection = ({ section, sectionIndex }) => {
           </div>
         )}
         
-        {/* Section Visuals */}
         {section.visuals && section.visuals.length > 0 && (
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             {section.visuals.map((visual, vidx) => (
@@ -28,7 +26,6 @@ export const ContentSection = ({ section, sectionIndex }) => {
           </div>
         )}
         
-        {/* Subsections */}
         {section.subsections && section.subsections.map((subsection, subidx) => (
           <div key={`subsection-${sectionIndex}-${subidx}`} className="ml-4 mt-4 border-l-2 border-gray-700 pl-4">
             <h4 className="text-lg font-medium mb-2">{subsection.title}</h4>
@@ -40,7 +37,6 @@ export const ContentSection = ({ section, sectionIndex }) => {
               </div>
             )}
             
-            {/* Subsection Visuals */}
             {subsection.visuals && subsection.visuals.length > 0 && (
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 {subsection.visuals.map((visual, vsubidx) => (

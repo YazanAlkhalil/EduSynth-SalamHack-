@@ -9,7 +9,6 @@ const corsOptions = {
 };
 
 app.use(cors());
-// Middleware
 app.use(bodyParser.json());
 app.get('/',(req,res) =>{
 
@@ -17,20 +16,17 @@ app.get('/',(req,res) =>{
 }
 )
 
-// Routes
 app.use('/api', generateContentRouter);
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something went wrong!' });
 });
               
-// Start server
 const PORT =  3005;
 const http = require('http');
 const server = http.createServer(app);
-server.timeout = 0; // 6000000ms = 6000 seconds
+server.timeout = 0; 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });

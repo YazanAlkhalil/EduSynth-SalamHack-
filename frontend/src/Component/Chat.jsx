@@ -8,7 +8,6 @@ import VoiceChat from './VoiceChat'; // Add this import
 // export const baseUrl = 'https://bad-mimi-asdfqwq-98106bdd.koyeb.app'
 export const baseUrl = 'https://bad-mimi-asdfqwq-98106bdd.koyeb.app'
 
-// Main Chat component
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -21,7 +20,6 @@ const Chat = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [loadingFlashcards, setLoadingFlashcards] = useState(false);
-  // Add new state variables for quiz functionality
   const [quizQuestions, setQuizQuestions] = useState([]);
   const [showQuiz, setShowQuiz] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -72,7 +70,7 @@ const Chat = () => {
 
   const handleGenerateQuiz = async () => {
     if (!input.trim()) {
-      return; // Don't proceed if input is empty
+      return; 
     }
 
     setLoadingQuiz(true);
@@ -109,7 +107,6 @@ const Chat = () => {
       setSelectedAnswer(userAnswers[quizQuestions[currentQuestionIndex + 1].id] || null);
       setShowExplanation(false);
     } else if (currentQuestionIndex === quizQuestions.length - 1 && !quizCompleted) {
-      // Calculate final score when reaching the last question
       calculateQuizScore();
     }
   };
@@ -118,7 +115,6 @@ const Chat = () => {
     let correctCount = 0;
     const total = quizQuestions.length;
 
-    // Count correct answers
     Object.keys(userAnswers).forEach(questionId => {
       const question = quizQuestions.find(q => q.id === questionId);
       if (question && userAnswers[questionId] === question.correctAnswer) {
@@ -251,7 +247,6 @@ const Chat = () => {
 
     ripple.className = 'flashcard-click-ripple';
 
-    // Remove existing ripples
     const existingRipple = button.querySelector('.flashcard-click-ripple');
     if (existingRipple) {
       existingRipple.remove();
@@ -259,43 +254,34 @@ const Chat = () => {
 
     button.appendChild(ripple);
 
-    // Remove ripple after animation completes
     setTimeout(() => {
       ripple.remove();
     }, 600);
   };
 
-  // Inside the Chat component, add this function to handle voice input
   const handleVoiceInput = (transcript) => {
     if (transcript.trim()) {
       setInput(transcript);
     }
   };
 
-  // Add new state for speech
   const [isSpeaking, setIsSpeaking] = useState(false);
   const speechSynthesisRef = useRef(window.speechSynthesis);
 
-  // Function to stop speaking
   const stopSpeaking = () => {
     speechSynthesisRef.current.cancel();
     setIsSpeaking(false);
   };
 
-  // Add function to handle text-to-speech
   const speakText = (text) => {
-    // Stop any ongoing speech
     speechSynthesisRef.current.cancel();
 
-    // If text is a string, use it directly
     let contentToSpeak = '';
 
     if (typeof text === 'string') {
       contentToSpeak = text;
     }
-    // If text is an object with content structure (introduction, sections, conclusion)
     else if (text && typeof text === 'object') {
-      // Check if it has content property with structured data
       if (text && typeof text === 'object') {
         const content = text;
         
@@ -303,12 +289,10 @@ const Chat = () => {
           contentToSpeak += content.title + '. ';
         }
        
-        // Add introduction if available
         if (content.introduction) {
           contentToSpeak += content.introduction.title + " " + content.introduction.description +" " + content.introduction.content + '. ';
         }
 
-        // Add sections if available
         if (content.sections && Array.isArray(content.sections)) {
           content.sections.forEach(section => {
             if (section.title) {
@@ -320,7 +304,6 @@ const Chat = () => {
             if (section.content) {
               contentToSpeak += section.content + '. ';
             }
-            // Handle subsections if they exist
             if (section.subsections && Array.isArray(section.subsections)) {
               section.subsections.forEach(subsection => {
                 if (subsection.title) {
@@ -334,7 +317,6 @@ const Chat = () => {
                 }
               });
             }
-            // For images, read the description if available
             if (section.images && Array.isArray(section.images)) {
               section.images.forEach(image => {
                 if (image.description) {
@@ -345,17 +327,14 @@ const Chat = () => {
           });
         }
 
-        // Add conclusion if available
         if (content.conclusion) {
           contentToSpeak += 'Conclusion: ' + content.conclusion.title + " " + content.conclusion.description +" " + content.conclusion.content + '. ';
         }
         
       }
-      // If it has a direct content property as string
       else if (text.content && typeof text.content === 'string') {
         contentToSpeak = text.content;
       }
-      // If it's just a plain object, try to stringify it
       else {
         try {
           contentToSpeak = JSON.stringify(text);
@@ -368,58 +347,39 @@ const Chat = () => {
 
     if (!contentToSpeak) return;
     
-    // Remove markdown syntax before speaking
     contentToSpeak = cleanMarkdownForSpeech(contentToSpeak);
     
     console.log("Clean content to speak:", contentToSpeak);
     
-    // Create a new speech utterance
     const utterance = new SpeechSynthesisUtterance(contentToSpeak);
 
    
 
-    // Set speaking state to true when speech starts
     utterance.onstart = () => setIsSpeaking(true);
 
-    // Set speaking state to false when speech ends or errors
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);
 
-    // Start speaking
     speechSynthesisRef.current.speak(utterance);
   };
   
-  // Helper function to clean markdown syntax for speech
   const cleanMarkdownForSpeech = (text) => {
     if (!text) return '';
     
     return text
-      // Remove headers (# Header)
       .replace(/#+\s/g, '')
-      // Remove bold/italic markers
       .replace(/\*\*|\*|__|\|_/g, '')
-      // Remove inline code
       .replace(/`([^`]+)`/g, '$1')
-      // Remove code blocks
       .replace(/```[\s\S]*?```/g, '')
-      // Remove blockquotes
       .replace(/^\s*>\s/gm, '')
-      // Remove horizontal rules
       .replace(/^\s*[-*_]{3,}\s*$/gm, '')
-      // Remove list markers
       .replace(/^\s*[-*+]\s/gm, '')
       .replace(/^\s*\d+\.\s/gm, '')
-      // Remove link syntax but keep the text
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-      // Remove image syntax but keep alt text
       .replace(/!\[([^\]]+)\]\([^)]+\)/g, 'Image: $1')
-      // Remove HTML tags
       .replace(/<[^>]*>/g, '')
-      // Replace multiple spaces with a single space
       .replace(/\s+/g, ' ')
-      // Replace multiple periods with a single one
       .replace(/\.{2,}/g, '.')
-      // Trim whitespace
       .trim();
   };
 
@@ -546,7 +506,6 @@ const Chat = () => {
             )}
           </div>
 
-          {/* Input Area */}
           <div className="border-t border-[#1E2537] p-4">
             <form onSubmit={handleSubmit} className="max-w-4xl mx-auto relative">
               <div className="flex gap-4 mb-4">
@@ -628,7 +587,6 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* Flashcards Modal */}
       {showFlashcards && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
           <div className="bg-gradient-to-br from-[#1E2537] to-[#121827] rounded-xl max-w-2xl w-full p-6 shadow-2xl border border-blue-500/20">
@@ -695,7 +653,6 @@ const Chat = () => {
         </div>
       )}
 
-      {/* Loading Flashcards Overlay */}
       {loadingFlashcards && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-[#1E2537] rounded-xl p-8 max-w-md w-full text-center">
@@ -710,7 +667,6 @@ const Chat = () => {
         </div>
       )}
 
-      {/* Quiz Modal */}
       {showQuiz && quizQuestions.length > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
           <div className="bg-gradient-to-br from-[#1E2537] to-[#121827] rounded-xl max-w-2xl w-full p-6 shadow-2xl border border-blue-500/20">
@@ -862,7 +818,6 @@ const Chat = () => {
         </div>
       )}
 
-      {/* Loading Quiz Overlay */}
       {loadingQuiz && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-[#1E2537] rounded-xl p-8 max-w-md w-full text-center">
@@ -877,8 +832,7 @@ const Chat = () => {
         </div>
       )}
 
-      {/* Loading Flashcards Overlay */}
-      {/* ... existing loading flashcards overlay code ... */}
+    
     </div>
   );
 };

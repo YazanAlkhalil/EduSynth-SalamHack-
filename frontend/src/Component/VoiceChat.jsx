@@ -7,7 +7,6 @@ const VoiceChat = ({ onTranscript, disabled }) => {
   const [recognition, setRecognition] = useState(null);
 
   useEffect(() => {
-    // Check if browser supports SpeechRecognition
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const recognitionInstance = new SpeechRecognition();
@@ -21,7 +20,6 @@ const VoiceChat = ({ onTranscript, disabled }) => {
         const transcriptText = event.results[current][0].transcript;
         setTranscript(transcriptText);
         
-        // If it's a final result, send it to the parent component
         if (event.results[current].isFinal) {
           onTranscript(transcriptText);
           stopListening();
