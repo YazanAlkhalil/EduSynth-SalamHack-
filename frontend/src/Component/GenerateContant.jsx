@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import ContentDisplay from '../Component/ContentDisplay'
+import { baseUrl } from './Chat';
 
 
 const ContentGenerator = () => {
@@ -24,7 +25,7 @@ const ContentGenerator = () => {
   
     try {
       const response = await axios.post(
-        'https://bad-mimi-asdfqwq-98106bdd.koyeb.app/api/generate-content',
+        baseUrl + '/api/generate-content',
         {
           prompt,
           difficultyLevel,

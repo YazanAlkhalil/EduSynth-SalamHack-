@@ -4,6 +4,8 @@ import axios from 'axios';
 import ContentDisplay from './ContentDisplay';
 import VoiceChat from './VoiceChat'; // Add this import
 
+export const baseUrl = 'http://localhost:3000'
+// const baseUrl = 'https://bad-mimi-asdfqwq-98106bdd.koyeb.app'
 
 // Main Chat component
 const Chat = () => {
@@ -40,7 +42,7 @@ const Chat = () => {
 
     try {
       const response = await axios.post(
-        'https://bad-mimi-asdfqwq-98106bdd.koyeb.app/api/generate-content',
+        baseUrl + '/api/generate-content',
         {
           prompt: input,
           difficultyLevel: selectedOption1,
@@ -76,7 +78,7 @@ const Chat = () => {
 
     try {
       const response = await axios.post(
-        'https://bad-mimi-asdfqwq-98106bdd.koyeb.app/api/generate-quizes',
+        baseUrl + '/api/generate-quizes',
         { params: input }
       );
 
@@ -185,7 +187,7 @@ const Chat = () => {
 
     try {
       const response = await axios.post(
-        'https://bad-mimi-asdfqwq-98106bdd.koyeb.app/api/generate-flashcards',
+        baseUrl + '/api/generate-flashcards',
         { prompt: input }
       );
 
