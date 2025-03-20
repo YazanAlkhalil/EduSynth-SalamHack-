@@ -1,37 +1,56 @@
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
-const { InferenceClient } = require("@huggingface/inference");
 require('dotenv').config()
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/flashcards'; // Replace with the actual API endpoint
-const DEEPSEEK_API_KEY = process.env.DSAPIKEY; // Get API key from environment variable
 
 
-/**
- * Enhanced Learning Content API Endpoint
- * Creates structured, contextual learning content with relevant visuals
- * 
- * Request body:
- * {
- *   "prompt": "The topic to learn about", 
- *   "difficultyLevel": "beginner|intermediate|advanced",
- *   "format": "article|lesson|overview" // optional
- * }
- */
+
+
 
 router.post('/generate-flashcards', async (req, res) => {
-    console.log("test flashcard");
-  
     const { prompt } = req.body;
     console.log(prompt);
 
     if (!prompt) {
         return res.status(400).json({ error: 'Prompt is required' });
     }
+    const flashcardPrompt = 
+    `Create a set of flashcards about "${prompt}".
 
+    Generate 5-10 question-answer pairs that cover the key concepts.
+    Each flashcard should:
+    1. Have a clear, focused question
+    2. Provide a concise but complete answer
+    3. Cover an important concept or fact
+    4. Be suitable for learning and review
+
+    Return the flashcards as a JSON array with this structure:
+    [
+    {
+        "id": "1",
+        "question": "What is X?",
+        "answer": "X is...",
+    }
+    ]
+
+    Important:
+    - Questions should test understanding, not just memorization
+
+    - Include a mix of basic and advanced concepts
+    - Each flashcard should focus on one specific point
+    - Use clear, precise language
+
+    Return ONLY the JSON array with no additional text.`;
     try {
-        const flashcards = await generateFlashcards(prompt);
-        res.status(200).json({ flashcards });
+        const textResponse = await getDeepSeekResponse(flashcardPrompt);
+        console.log(textResponse,'res')
+        const jsonMatch = textResponse.match(/```json\n([\s\S]*?)\n```/) ||
+            textResponse.match(/```\n([\s\S]*?)\n```/) ||
+            [null, textResponse];
+
+        const jsonContent = jsonMatch[1].trim();
+        const json = JSON.parse(jsonContent)
+        res.status(200).json(json);
     } catch (error) {
         res.status(500).json({ error: 'Failed to generate flashcards', details: error.message });
     }
@@ -191,7 +210,7 @@ async function expandContentSections(contentStructure) {
             );
 
             // Process all subsections in parallel
-            const subsectionPromises = section.subsections.map(subsection => 
+            const subsectionPromises = section.subsections.map(subsection =>
                 getDetailedContent(
                     contentStructure.title,
                     `${section.title} - ${subsection.title}`,
@@ -261,7 +280,7 @@ async function enhanceWithVisuals(expandedContent) {
         const enhancedSection = await addVisualsToSection(section);
 
         // Process all subsections in parallel
-        const subsectionPromises = enhancedSection.subsections.map(subsection => 
+        const subsectionPromises = enhancedSection.subsections.map(subsection =>
             addVisualsToSection(subsection)
         );
 
@@ -412,7 +431,7 @@ async function getRelevantImage(description) {
             .filter(term => term.length > 2 && !term.includes('/') && !term.includes('(') && !term.includes(')'))
             .slice(0, 5)
             .join(' ');
-            
+
         console.log(`Searching Unsplash for: "${searchTerms}"`);
 
         const response = await axios.get(`https://api.unsplash.com/search/photos`, {
@@ -422,7 +441,7 @@ async function getRelevantImage(description) {
                 orientation: 'landscape'
             },
             headers: {
-                'Authorization': 'Client-ID '+process.env.UNSPLASHAPIKEY
+                'Authorization': 'Client-ID ' + process.env.UNSPLASHAPIKEY
             }
         });
 
@@ -440,18 +459,18 @@ async function getRelevantImage(description) {
                 }
             };
         }
-        
+
         // If no results, try a more generic search based on the topic
         console.log(`No results found for "${searchTerms}", trying more generic search`);
-        
+
         // Extract key nouns from the search terms
         const keyTerms = searchTerms.split(' ')
             .filter(term => term.length > 3)
             .slice(0, 2)
             .join(' ');
-        
+
         if (!keyTerms) return null;
-        
+
         const fallbackResponse = await axios.get(`https://api.unsplash.com/search/photos`, {
             params: {
                 query: keyTerms,
@@ -459,10 +478,10 @@ async function getRelevantImage(description) {
                 orientation: 'landscape'
             },
             headers: {
-                'Authorization': 'Client-ID '+process.env.UNSPLASHAPIKEY
+                'Authorization': 'Client-ID ' + process.env.UNSPLASHAPIKEY
             }
         });
-        
+
         if (fallbackResponse.data.results && fallbackResponse.data.results.length > 0) {
             const image = fallbackResponse.data.results[0];
             console.log(`Found fallback image: ${image.urls.small}`);
@@ -477,7 +496,7 @@ async function getRelevantImage(description) {
                 }
             };
         }
-        
+
         console.log(`No images found for "${description}"`);
         return null;
     } catch (error) {
@@ -547,7 +566,7 @@ async function getRelevantMap(description) {
                 per_page: 1
             },
             headers: {
-                'Authorization': 'Client-ID '+process.env.UNSPLASHAPIKEY
+                'Authorization': 'Client-ID ' + process.env.UNSPLASHAPIKEY
             }
         });
 
@@ -643,20 +662,36 @@ async function addInteractiveElements(enhancedContent) {
 async function generateQuiz(content) {
     try {
         // Create a prompt that includes key information from the content
-        let quizPrompt = `Create a quiz to test understanding of a lesson about "${content.title}".
+        let quizPrompt = `Create a quiz to test understanding of a lesson about "${content}".
 
-    Key sections in this lesson include:
-    - ${content.introduction.title}
-    ${content.sections.map(section => `- ${section.title}`).join('\n')}
     
-    Generate 5 multiple-choice questions that test understanding of the most important concepts.
-    For each question:
-    1. Provide a clear, concise question
-    2. Provide 4 possible answers (A, B, C, D)
-    3. Indicate which answer is correct
-    4. Provide a brief explanation of why that answer is correct
     
-    Return the quiz as a JSON object with an array of question objects.`;
+        Generate 10 multiple-choice questions that test understanding of the most important concepts.
+        For each question:
+        1. Provide a clear, concise question
+        2. Provide 4 possible answers (A, B, C, D)
+        3. Indicate which answer is correct
+        4. Provide a brief explanation of why that answer is correct
+        
+        Return the quiz as a JSON object with this exact structure:
+        {
+        "questions": [
+            {
+            "id": "1",
+            "question": "What is the main purpose of X?",
+            "options": {
+                "A": "First option",
+                "B": "Second option",
+                "C": "Third option", 
+                "D": "Fourth option"
+            },
+            "correctAnswer": "B",
+            "explanation": "Second option is correct because..."
+            }
+        ]
+        }
+
+        Return ONLY the JSON object with no additional text.`;
 
         const textResponse = await getDeepSeekResponse(quizPrompt);
 
@@ -684,7 +719,9 @@ async function generateQuiz(content) {
     }
 }
 
-
+router.post('/generate-quizes',async (req,res)=>{
+    res.json(await generateQuiz(req.body.params))
+})
 
 // Replace all Anthropic API calls with this helper function
 async function getDeepSeekResponse(prompt, retries = 3) {
@@ -700,7 +737,7 @@ async function getDeepSeekResponse(prompt, retries = 3) {
                 ]
             }, {
                 headers: {
-                    "Authorization": "Bearer "+process.env.DSAPIKEY,
+                    "Authorization": "Bearer " + process.env.DSAPIKEY,
 
                     "Content-Type": "application/json"
                 }
@@ -727,34 +764,7 @@ async function getDeepSeekResponse(prompt, retries = 3) {
 }
 
 
-// Function to generate flashcards using Deepseek API
-async function generateFlashcards(prompt) {
-    try {
-        console.log(DEEPSEEK_API_KEY);
-        console.log(DEEPSEEK_API_URL);
-        const response = await axios.post(
-            DEEPSEEK_API_URL,
-            {
-                prompt: prompt // Send the prompt to the API
-            },
-            {
-                headers: {
-                    'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
 
-        if (response.status === 200) {
-            return response.data.flashcards; // Return the generated flashcards
-        } else {
-            throw new Error(`Error: ${response.status} - ${response.statusText}`);
-        }
-    } catch (error) {
-        console.error('Error generating flashcards:', error.message);
-        throw error; // Re-throw the error to handle it in the route
-    }
-}
 
 // Controller function for generating flashcards
 

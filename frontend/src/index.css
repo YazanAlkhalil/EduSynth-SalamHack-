@@ -1,1 +1,93 @@
 @import "tailwindcss";
+
+/* Flashcard styles */
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flashcard-flip {
+  transform: rotateY(180deg);
+  transform-style: preserve-3d;
+  box-shadow: 0 15px 25px rgba(0, 100, 255, 0.2);
+}
+
+.flashcard-back {
+  transform: rotateY(180deg);
+}
+
+/* Add these styles for the flip animation */
+.transition-all {
+  transition-property: all;
+}
+
+.duration-700 {
+  transition-duration: 700ms;
+}
+
+/* Ensure the parent has the proper perspective */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* New engaging visual effects */
+.flashcard-container {
+  position: relative;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.flashcard-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 100, 255, 0.3);
+}
+
+.flashcard-container:active {
+  transform: scale(0.98);
+}
+
+.flashcard-shine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+  border-radius: 0.5rem;
+}
+
+.flashcard-container:hover .flashcard-shine {
+  opacity: 1;
+  animation: shine-effect 1.5s infinite;
+}
+
+@keyframes shine-effect {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.flashcard-click-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.5) 0%, rgba(59, 130, 246, 0) 70%);
+  transform: scale(0);
+  animation: ripple 0.6s linear;
+  pointer-events: none;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}

@@ -1,6 +1,10 @@
 {
+  "scripts": {
+    "start": "node app.js",
+    "vercel-build": "npm install",
+    "build": "echo 'No build step required'"
+  },
   "dependencies": {
-    "@huggingface/inference": "^3.5.2",
     "axios": "^1.8.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
