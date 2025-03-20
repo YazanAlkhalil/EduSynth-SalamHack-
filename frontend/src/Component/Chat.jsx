@@ -40,7 +40,7 @@ const Chat = () => {
 
     try {
       const response = await axios.post(
-        'https://edu-synth-salam-hack-oj4e.vercel.app/api/generate-content',
+        'https://bad-mimi-asdfqwq-98106bdd.koyeb.app/api/generate-content',
         {
           prompt: input,
           difficultyLevel: selectedOption1,
@@ -76,7 +76,7 @@ const Chat = () => {
 
     try {
       const response = await axios.post(
-        'https://edu-synth-salam-hack-oj4e.vercel.app/api/generate-quizes',
+        'https://bad-mimi-asdfqwq-98106bdd.koyeb.app/api/generate-quizes',
         { params: input }
       );
 
@@ -185,7 +185,7 @@ const Chat = () => {
 
     try {
       const response = await axios.post(
-        'https://edu-synth-salam-hack-oj4e.vercel.app/api/generate-flashcards',
+        'https://bad-mimi-asdfqwq-98106bdd.koyeb.app/api/generate-flashcards',
         { prompt: input }
       );
 
