@@ -40,7 +40,7 @@ const Chat = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:3000/api/generate-content',
+        'https://edu-synth-salam-hack-oj4e.vercel.app/api/generate-content',
         {
           prompt: input,
           difficultyLevel: selectedOption1,
@@ -50,7 +50,7 @@ const Chat = () => {
 
       const assistantResponse = {
         role: 'assistant',
-        content: 'I\'ve generated the content for you! shika',
+        content: 'I\'ve generated the content for you!',
         generatedContent: response.data
       };
 
@@ -76,7 +76,7 @@ const Chat = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:3000/api/generate-quizes',
+        'https://edu-synth-salam-hack-oj4e.vercel.app/api/generate-quizes',
         { params: input }
       );
 
@@ -185,7 +185,7 @@ const Chat = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:3000/api/generate-flashcards',
+        'https://edu-synth-salam-hack-oj4e.vercel.app/api/generate-flashcards',
         { prompt: input }
       );
 
@@ -498,8 +498,8 @@ const Chat = () => {
                         </p>
                         {message.role === 'assistant' && (
                           <button
-                            onClick={() => isSpeaking ? stopSpeaking() : speakText(message.content)}
-                            className={`p-1 rounded-full ${isSpeaking ? 'bg-blue-600' : 'hover:bg-[#2A3343]'} transition-colors`}
+                          onClick={() => isSpeaking ? stopSpeaking() : speakText(message.generatedContent)}
+                          className={`p-1 rounded-full ${isSpeaking ? 'bg-blue-600' : 'hover:bg-[#2A3343]'} transition-colors`}
                             title={isSpeaking ? "Stop speaking" : "Listen to response"}
                           >
                             <Volume2 size={16} className={isSpeaking ? 'text-white animate-pulse' : 'text-gray-400'} />
@@ -510,7 +510,7 @@ const Chat = () => {
                       {message.generatedContent && (
                         <div>
                           <ContentDisplay content={message.generatedContent} />
-                          {true && (
+                          {/* {true && (
                             <button
                               onClick={() => isSpeaking ? stopSpeaking() : speakText(message.generatedContent)}
                               className="mt-2 flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition-colors"
@@ -518,7 +518,7 @@ const Chat = () => {
                               <Volume2 size={14} />
                               <span>{isSpeaking ? "Stop speaking" : "Listen to content"}</span>
                             </button>
-                          )}
+                          )} */}
                         </div>
                       )}
                     </div>
